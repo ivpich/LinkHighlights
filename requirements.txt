@@ -1,0 +1,10 @@
+openai
+tiktoken
+numpy
+pandas
+python-dotenv
+fastapi
+uvicorn
+python-multipart
+sqlalchemy
+psycopg2-binary

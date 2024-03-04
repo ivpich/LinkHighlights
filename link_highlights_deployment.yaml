@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: link-highlights-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: link-highlights
+  template:
+    metadata:
+      labels:
+        app: link-highlights
+    spec:
+      dnsPolicy: "None"
+      dnsConfig:
+        nameservers:
+          - "8.8.8.8"
+          - "8.8.4.4"
+      containers:
+      - name: link-highlights
+        image: cr.yandex/crp5cek79rjcmod6ji3v/link-highlights:v2
+        ports:
+        - containerPort: 8000
+        env:
+          - name: DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: database-url
+                key: key1
+          - name: OPENAI_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: openai-api-key
+                key: key1
+        volumeMounts:
+        - name: ca-certificate-volume
+          mountPath: /root/.postgresql/root.crt
+          subPath: CA.pem
+      - name: vpn-sidecar
+        image: cr.yandex/crp5cek79rjcmod6ji3v/openvpn-sidecar:latest
+        securityContext:
+          capabilities:
+            add:
+              - NET_ADMIN
+        args: ["--config", "/etc/openvpn/guildvpn.ovpn"]
+        command: [ "/bin/sh", "-c", "mkdir -p /dev/net && mknod /dev/net/tun c 10 200 && chmod 600 /dev/net/tun && exec /usr/sbin/openvpn --config /etc/openvpn/guildvpn.ovpn" ]
+        volumeMounts:
+        - name: new-vpn-config
+          mountPath: /etc/openvpn
+        - name: ca-certificate-volume
+          mountPath: /root/.postgresql/root.crt
+          subPath: CA.pem
+      volumes:
+      - name: new-vpn-config
+        configMap:
+          name: vpn-config
+      - name: ca-certificate-volume
+        configMap:
+          name: ca-certificate
