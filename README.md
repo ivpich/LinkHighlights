@@ -15,6 +15,7 @@ This project is designed to extract highlights from videoconference transcriptio
 - Kubernetes cluster (for Kubernetes deployment)
 - kubectl (for Kubernetes deployment)
 - Access to a VPN service (for Kubernetes deployment with VPN sidecar)
+- DATABASE_URL and OPENAI_API_KEY environment variables set up
 
 ## Local Deployment
 
